@@ -132,11 +132,12 @@ class KNearestNeighbor(object):
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
         # use (x - y)^2 = x^2 - 2xy + y^2
-        X_2 = np.reshape(np.sum(X**2, axis=1), [num_test,1])
-        X_tr2 = np.sum(self.X_train**2, axis=1)
-        dists = np.sqrt(X_2[:,np.newaxis] - 2*X@(self.X_train.T) + X_tr2)
+        # X_2 = np.reshape(np.sum(X**2, axis=1), [num_test,1])
+        # X_tr2 = np.sum(self.X_train**2, axis=1)
+        # dists = np.sqrt(X_2[:,np.newaxis] - 2*X@(self.X_train.T) + X_tr2)
         # https://numpy.org/doc/stable/reference/generated/numpy.dot.html 
 
+        dists = np.sqrt(-2*np.dot(X, self.X_train.T) + np.sum(np.square(self.X_train), axis = 1) + np.transpose([np.sum(np.square(X), axis = 1)]))
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         return dists
 
