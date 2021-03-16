@@ -27,26 +27,24 @@ def svm_loss_naive(W, X, y, reg):
     num_classes = W.shape[1]
     num_train = X.shape[0]
     loss = 0.0
-    for i in range(num_train):
+    for i in range(num_train): # for each image
         scores = X[i].dot(W)
         correct_class_score = scores[y[i]]
-        for j in range(num_classes):
+        for j in range(num_classes): # for each class (col of W)
             if j == y[i]:
                 continue
             margin = scores[j] - correct_class_score + 1 # note delta = 1
             if margin > 0:
                 loss += margin
-                dW[:,j] += X[i].T # image unit
+                dW[:,j] += X[i].T
                 dW[:,y[i]] -= X[i].T
 
-    # Right now the loss is a sum over all training examples, but we want it
-    # to be an average instead so we divide by num_train.
     loss /= num_train
-    dW /= num_train # even though continue or margin == 0, count valid
+    dW /= num_train # even when continue or margin = 1, count valid?
 
     # Add regularization to the loss.
     loss += reg * np.sum(W * W)
-    dW += 2 * reg * np.sum(W)
+    dW += 2 * reg * W
 
     #############################################################################
     # TODO:                                                                     #
@@ -82,7 +80,17 @@ def svm_loss_vectorized(W, X, y, reg):
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    num_classes = W.shape[1] # 10
+    num_train = X.shape[0] # 500
+    loss = 0.0
+
+    scores = X.dot(W) # (500,10)
+    correct_class_score = scores[range(num_train), y].reshape([num_train, 1]) # (500,) -> (500,1)
+    margin = scores - correct_class_score + 1 # broadcast to (500, 10)
+    margin[range(num_train), y] = 0 # if s_j == s_yi above
+
+    loss = np.sum(np.maximum(0, margin)) # now I can exclude j = y[i], no?
+    loss /= num_train
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
@@ -97,8 +105,19 @@ def svm_loss_vectorized(W, X, y, reg):
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    # pass
+    # r=round(); Loss = sum(Relu(0, Margin)) -> rL / rW ?
+    # rL/rW = rL/rR rR/rM rM/rW = rL/rR rR/rM X.T
+    rLrM = np.zeros((num_train, num_classes)) # (500, 10)
+    rLrM[margin < 0] = 0 # just to be sure
+    rLrM[margin > 0] = 1 # b/c ReLU
+    rLrM[range(num_train), y] = -np.sum(rLrM, axis=1) # b/c subtracting s_j is repeated
+    
+    dW = np.dot(X.T, rLrM)
+    dW /= num_train
+    dW += 2 * reg * W
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
     return loss, dW
+
