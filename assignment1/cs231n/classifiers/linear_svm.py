@@ -89,7 +89,7 @@ def svm_loss_vectorized(W, X, y, reg):
     margin = scores - correct_class_score + 1 # broadcast to (500, 10)
     margin[range(num_train), y] = 0 # if s_j == s_yi above
 
-    loss = np.sum(np.maximum(0, margin)) # now I can exclude j = y[i], no?
+    loss = np.sum(np.maximum(0, margin))
     loss /= num_train
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
@@ -120,4 +120,5 @@ def svm_loss_vectorized(W, X, y, reg):
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
     return loss, dW
+
 
