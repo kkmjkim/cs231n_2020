@@ -33,7 +33,33 @@ def softmax_loss_naive(W, X, y, reg):
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    # pass
+    num_train = X.shape[0] # 500 inputs
+    num_classes = W.shape[1] # 10 classes
+
+    for i in range(num_train):
+      scores = np.dot(X[i], W)
+
+      # numeric stability: https://cs231n.github.io/linear-classify/#softmax 
+      stable_scores = scores - np.max(scores)
+
+      # same as: -stable_scores[y[i]] + np.log(np.sum(np.exp(stable_scores)))
+      loss_i = -np.log(np.exp(stable_scores[y[i]]) / np.sum(np.exp(stable_scores)))
+      loss += loss_i
+     
+      # calculate dW
+      # if, rPj/rS_sj, else, rPj/rS_syi
+      for j in range(num_classes):
+        softmax_output = np.exp(stable_scores[j]) / np.sum(np.exp(stable_scores))
+        if j == y[i]: # p_j*(1 - p_yi)
+          dW[:, j] -= (1 - softmax_output) * X[i]
+        else: # -p_j*p_yi
+          dW[:, j] -= -softmax_output * X[i]
+    
+    loss /= num_train
+    loss += reg*np.sum(W*W) # L2 Regularization
+    dW /= num_train
+    dW += 2 * reg * W
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
@@ -58,7 +84,14 @@ def softmax_loss_vectorized(W, X, y, reg):
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    # pass
+    scores = np.dot(X, W)
+    stable_scores = scores - np.max(scores, axis=1).reshape(-1,1) # for broadcasting
+    loss = np.sum(-np.log(np.exp(stable_scores[range(num_train), y]) / np.sum(np.exp(stable_scores), axis=1)))
+    
+    softmax_output = np.exp(stable_scores)/np.sum(np.exp(stable_scores), axis = 1) # (500,10)
+
+
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
